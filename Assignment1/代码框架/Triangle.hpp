@@ -25,12 +25,12 @@ class Triangle
     Eigen::Vector3f b() const { return v[1]; }
     Eigen::Vector3f c() const { return v[2]; }
 
-    void setVertex(int ind, Vector3f ver); /*set i-th vertex coordinates */
+    void setVertex(int ind, Vector3f ver); /*set i-th vertex coordinates*/
     void setNormal(int ind, Vector3f n);   /*set i-th vertex normal vector*/
     void setColor(int ind, float r, float g, float b); /*set i-th vertex color*/
     void setTexCoord(int ind, float s,
                      float t); /*set i-th vertex texture coordinate*/
-    std::array<Vector4f, 3> toVector4() const;
+    std::array<Vector4f, 3> toVector4() const; /*Convert a 3d coordinates to homogeneous coordinates*/
 };
 
 #endif // RASTERIZER_TRIANGLE_H
