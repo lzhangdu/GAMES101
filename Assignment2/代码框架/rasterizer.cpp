@@ -39,9 +39,9 @@ auto to_vec4(const Eigen::Vector3f& v3, float w = 1.0f)
     return Vector4f(v3.x(), v3.y(), v3.z(), w);
 }
 
-static bool insideTriangle(int x, int y, const Vector3f* _v)
+static bool _insideTriangle(float x, float y, const Vector3f* _v)
 {
-    Vector3f P(x, y, 0);
+    Vector3f P(x, y, 0.f);
 
     Vector3f AB = _v[1] - _v[0];
     Vector3f AP = P - _v[0];
@@ -53,8 +53,8 @@ static bool insideTriangle(int x, int y, const Vector3f* _v)
  
     Vector3f CA = _v[0] - _v[2];
     Vector3f CP = P - _v[2];
-    auto cross3 = CA.cross(AP);
- 
+    auto cross3 = CA.cross(CP);
+
     /* 相同符号 */
     if ((cross1.z() > 0 && cross2.z() > 0 && cross3.z() > 0) ||
         (cross1.z() < 0 && cross2.z() < 0 && cross3.z() < 0)) {
@@ -62,6 +62,15 @@ static bool insideTriangle(int x, int y, const Vector3f* _v)
     }
  
     return false;
+}
+
+static float insideTriangle(int x, int y, const Vector3f* _v) {
+    int subsampleInside = 0;
+    if (_insideTriangle(x + 0.25f, y + 0.25f, _v)) ++subsampleInside;
+    if (_insideTriangle(x + 0.75f, y + 0.25f, _v)) ++subsampleInside;
+    if (_insideTriangle(x + 0.25f, y + 0.75f, _v)) ++subsampleInside;
+    if (_insideTriangle(x + 0.75f, y + 0.75f, _v)) ++subsampleInside;
+    return subsampleInside / 4.0f;
 }
 
 static std::tuple<float, float, float> computeBarycentric2D(float x, float y, const Vector3f* v)
@@ -86,9 +95,9 @@ void rst::rasterizer::draw(pos_buf_id pos_buffer, ind_buf_id ind_buffer, col_buf
     {
         Triangle t;
         Eigen::Vector4f v[] = {
-                mvp * to_vec4(buf[i[0]], 1.0f),
-                mvp * to_vec4(buf[i[1]], 1.0f),
-                mvp * to_vec4(buf[i[2]], 1.0f)
+            mvp * to_vec4(buf[i[0]], 1.0f),
+            mvp * to_vec4(buf[i[1]], 1.0f),
+            mvp * to_vec4(buf[i[2]], 1.0f)
         };
         //Homogeneous division
         for (auto& vec : v) {
