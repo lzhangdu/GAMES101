@@ -256,7 +256,7 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
     Eigen::Vector3f ln(-dU, -dV, 1.0f);
 
     // Position p = p + kn * n * h(u,v)
-    Eigen::Vector3f displaced_point = point + kn * normal * payload.texture->getColor(u, v).norm();
+    point = point + kn * normal * payload.texture->getColor(u, v).norm();
 
     // Normal n = normalize(TBN * ln)
     Eigen::Vector3f perturbed_normal = (TBN * ln).normalized();
@@ -272,13 +272,13 @@ Eigen::Vector3f displacement_fragment_shader(const fragment_shader_payload& payl
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
         // 计算光照向量（从fragment到光源）
-        Eigen::Vector3f light_direction = (light.position - displaced_point).normalized();
+        Eigen::Vector3f light_direction = (light.position - point).normalized();
         
         // 计算视线向量（从fragment到眼睛）
-        Eigen::Vector3f view_direction = (eye_pos - displaced_point).normalized();
+        Eigen::Vector3f view_direction = (eye_pos - point).normalized();
 
         // 计算衰减
-        Eigen::Vector3f attenuated_intensity = light.intensity / ((light.position - displaced_point).norm() * (light.position - point).norm());
+        Eigen::Vector3f attenuated_intensity = light.intensity / ((light.position - point).norm() * (light.position - point).norm());
 
         // 2. Diffuse term
         float diff = std::max(0.0f, perturbed_normal.dot(light_direction));
@@ -393,7 +393,7 @@ int main(int argc, const char** argv)
 
     rst::rasterizer r(700, 700);
 
-    auto texture_path = "spot_texture.png";
+    auto texture_path = "hmap.jpg";
     r.set_texture(Texture(obj_path + texture_path));
 
     std::function<Eigen::Vector3f(fragment_shader_payload)> active_shader = texture_fragment_shader;
